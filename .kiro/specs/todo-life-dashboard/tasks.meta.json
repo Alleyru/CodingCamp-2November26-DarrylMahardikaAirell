@@ -1,0 +1,155 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 Create `index.html` with widget containers": [
+      {
+        "executionId": "2285c60e-4893-43a9-9124-39084284934c",
+        "chatSessionId": "sess_c29c297b-16a6-4f9a-b639-3daed6640cc3",
+        "timestamp": 1793978389498
+      },
+      {
+        "executionId": "2285c60e-4893-43a9-9124-39084284934c",
+        "chatSessionId": "sess_c29c297b-16a6-4f9a-b639-3daed6640cc3",
+        "timestamp": 1793978411895
+      },
+      {
+        "executionId": "2285c60e-4893-43a9-9124-39084284934c",
+        "chatSessionId": "sess_c29c297b-16a6-4f9a-b639-3daed6640cc3",
+        "timestamp": 1793980992406
+      }
+    ],
+    "1.2 Create `css/style.css` with base styling, layout, accessibility, and theme variables": [
+      {
+        "executionId": "2285c60e-4893-43a9-9124-39084284934c",
+        "chatSessionId": "sess_c29c297b-16a6-4f9a-b639-3daed6640cc3",
+        "timestamp": 1793978389619
+      },
+      {
+        "executionId": "2285c60e-4893-43a9-9124-39084284934c",
+        "chatSessionId": "sess_c29c297b-16a6-4f9a-b639-3daed6640cc3",
+        "timestamp": 1793978411980
+      },
+      {
+        "executionId": "2285c60e-4893-43a9-9124-39084284934c",
+        "chatSessionId": "sess_c29c297b-16a6-4f9a-b639-3daed6640cc3",
+        "timestamp": 1793980992514
+      }
+    ],
+    "1.3 Set up Vitest, fast-check, and jsdom testing configuration": [
+      {
+        "executionId": "2285c60e-4893-43a9-9124-39084284934c",
+        "chatSessionId": "sess_c29c297b-16a6-4f9a-b639-3daed6640cc3",
+        "timestamp": 1793978389696
+      },
+      {
+        "executionId": "2285c60e-4893-43a9-9124-39084284934c",
+        "chatSessionId": "sess_c29c297b-16a6-4f9a-b639-3daed6640cc3",
+        "timestamp": 1793978412045
+      },
+      {
+        "executionId": "2285c60e-4893-43a9-9124-39084284934c",
+        "chatSessionId": "sess_c29c297b-16a6-4f9a-b639-3daed6640cc3",
+        "timestamp": 1793980992577
+      }
+    ],
+    "1.4 Create `js/app.js` IIFE skeleton with module namespace structure": [
+      {
+        "executionId": "2285c60e-4893-43a9-9124-39084284934c",
+        "chatSessionId": "sess_c29c297b-16a6-4f9a-b639-3daed6640cc3",
+        "timestamp": 1793978389772
+      },
+      {
+        "executionId": "2285c60e-4893-43a9-9124-39084284934c",
+        "chatSessionId": "sess_c29c297b-16a6-4f9a-b639-3daed6640cc3",
+        "timestamp": 1793978412113
+      },
+      {
+        "executionId": "2285c60e-4893-43a9-9124-39084284934c",
+        "chatSessionId": "sess_c29c297b-16a6-4f9a-b639-3daed6640cc3",
+        "timestamp": 1793980992631
+      }
+    ],
+    "2.1 Implement StorageService with localStorage feature detection, save/load, and serialization": [
+      {
+        "executionId": "2285c60e-4893-43a9-9124-39084284934c",
+        "chatSessionId": "sess_c29c297b-16a6-4f9a-b639-3daed6640cc3",
+        "timestamp": 1793978389882
+      },
+      {
+        "executionId": "2285c60e-4893-43a9-9124-39084284934c",
+        "chatSessionId": "sess_c29c297b-16a6-4f9a-b639-3daed6640cc3",
+        "timestamp": 1793981004234
+      }
+    ],
+    "3.1 Implement GreetingWidget with pure functions, DOM rendering, and init": [
+      {
+        "executionId": "2285c60e-4893-43a9-9124-39084284934c",
+        "chatSessionId": "sess_c29c297b-16a6-4f9a-b639-3daed6640cc3",
+        "timestamp": 1793978389960
+      }
+    ],
+    "4. Checkpoint - Ensure greeting and storage tests pass": [
+      {
+        "executionId": "2285c60e-4893-43a9-9124-39084284934c",
+        "chatSessionId": "sess_c29c297b-16a6-4f9a-b639-3daed6640cc3",
+        "timestamp": 1793978390038
+      }
+    ],
+    "5.1 Implement FocusTimer with formatTimer, state machine, wall-clock countdown, DOM rendering, and init": [
+      {
+        "executionId": "2285c60e-4893-43a9-9124-39084284934c",
+        "chatSessionId": "sess_c29c297b-16a6-4f9a-b639-3daed6640cc3",
+        "timestamp": 1793978390112
+      }
+    ],
+    "6.1 Implement TodoList with validation, CRUD, duplicate detection, sorting, DOM rendering, event delegation, and init": [
+      {
+        "executionId": "2285c60e-4893-43a9-9124-39084284934c",
+        "chatSessionId": "sess_c29c297b-16a6-4f9a-b639-3daed6640cc3",
+        "timestamp": 1793978390185
+      }
+    ],
+    "7. Checkpoint - Ensure timer and todo tests pass": [
+      {
+        "executionId": "2285c60e-4893-43a9-9124-39084284934c",
+        "chatSessionId": "sess_c29c297b-16a6-4f9a-b639-3daed6640cc3",
+        "timestamp": 1793978390263
+      }
+    ],
+    "8.1 Implement QuickLinks with validateLink, isAtMaxLinks, CRUD operations, DOM rendering, event delegation, and init": [
+      {
+        "executionId": "2285c60e-4893-43a9-9124-39084284934c",
+        "chatSessionId": "sess_c29c297b-16a6-4f9a-b639-3daed6640cc3",
+        "timestamp": 1793978390334
+      }
+    ],
+    "9.1 Implement ThemeManager with toggle, applyTheme, resolveTheme, getThemeColors, contrastRatio, DOM rendering, and init": [
+      {
+        "executionId": "2285c60e-4893-43a9-9124-39084284934c",
+        "chatSessionId": "sess_c29c297b-16a6-4f9a-b639-3daed6640cc3",
+        "timestamp": 1793978390412
+      }
+    ],
+    "10.1 Implement App.init bootstrap, module initialization, data loading, and save callbacks": [
+      {
+        "executionId": "2285c60e-4893-43a9-9124-39084284934c",
+        "chatSessionId": "sess_c29c297b-16a6-4f9a-b639-3daed6640cc3",
+        "timestamp": 1793978390488
+      }
+    ],
+    "11. Checkpoint - Ensure all module tests pass": [
+      {
+        "executionId": "2285c60e-4893-43a9-9124-39084284934c",
+        "chatSessionId": "sess_c29c297b-16a6-4f9a-b639-3daed6640cc3",
+        "timestamp": 1793978390561
+      }
+    ],
+    "13. Final checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "2285c60e-4893-43a9-9124-39084284934c",
+        "chatSessionId": "sess_c29c297b-16a6-4f9a-b639-3daed6640cc3",
+        "timestamp": 1793978390634
+      }
+    ]
+  }
+}

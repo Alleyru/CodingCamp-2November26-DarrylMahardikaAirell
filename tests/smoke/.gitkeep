@@ -1,0 +1,3 @@
+# Smoke tests — project structure and technology-stack constraints.
+# Runs in the jsdom environment (configured via environmentMatchGlobs).
+# See design.md "Test File Organization".

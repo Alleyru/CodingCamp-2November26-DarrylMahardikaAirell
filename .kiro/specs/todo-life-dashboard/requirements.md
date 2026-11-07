@@ -15,6 +15,10 @@ The To-Do List Life Dashboard is a client-side web application that helps users 
 - **Quick_Link**: A single website shortcut consisting of a display name and a URL, rendered as a button.
 - **Local_Storage**: The browser Web Storage API (`window.localStorage`) used for client-side data persistence of Tasks and Quick_Links.
 - **Vanilla JavaScript**: JavaScript written without frameworks or external libraries such as React, Vue, or Angular.
+- **Theme**: The active visual color scheme of the Dashboard, configured as either dark mode or light mode.
+- **Dark_Mode**: A Theme configuration that uses a dark background color with light text.
+- **Light_Mode**: A Theme configuration that uses a light background color with dark text.
+- **Sort_Mode**: The ordering applied to the To_Do_List, selected from creation order, completion status, or alphabetical order.
 
 ## Requirements
 
@@ -129,3 +133,40 @@ The To-Do List Life Dashboard is a client-side web application that helps users 
 2. WHEN the user provides a click or keyboard input, THE Dashboard SHALL update the user interface within 100 milliseconds.
 3. THE Dashboard SHALL present a minimal interface containing only the Greeting_Widget, Focus_Timer, To_Do_List, and Quick_Links arranged in distinct, non-overlapping display areas.
 4. THE Dashboard SHALL use body text of at least 16 pixels in size with a contrast ratio of at least 4.5:1 between text and background.
+
+### Requirement 10: Toggle Dark and Light Mode
+
+**User Story:** As a user, I want to switch between dark and light mode with a single toggle, so that I can choose a comfortable visual theme that persists across sessions.
+
+#### Acceptance Criteria
+
+1. THE Dashboard SHALL display a single toggle button that switches the active Theme between dark mode and light mode.
+2. WHEN the user activates the Theme toggle button, THE Dashboard SHALL toggle the Theme from dark mode to light mode, or from light mode to dark mode.
+3. WHILE the Theme is dark mode, THE Dashboard SHALL display a dark background color with light text.
+4. WHILE the Theme is light mode, THE Dashboard SHALL display a light background color with dark text.
+5. WHEN the user changes the Theme, THE Dashboard SHALL save the Theme preference to Local_Storage.
+6. WHEN the Dashboard loads, THE Dashboard SHALL retrieve the saved Theme from Local_Storage and apply the saved Theme to the Dashboard.
+7. IF Local_Storage contains no saved Theme on load, THEN THE Dashboard SHALL apply light mode as the default Theme.
+8. THE Dashboard SHALL maintain a contrast ratio of at least 4.5:1 between text and background in both dark mode and light mode.
+
+### Requirement 11: Sort Tasks
+
+**User Story:** As a user, I want to sort my tasks by creation order, completion status, or alphabetical order, so that I can organize my task list according to my preference.
+
+#### Acceptance Criteria
+
+1. THE To_Do_List SHALL provide a Sort_Mode control that allows the user to select from creation order, completion status, and alphabetical order.
+2. WHEN the user selects a Sort_Mode, THE To_Do_List SHALL reorder the displayed Tasks according to the selected Sort_Mode.
+3. WHEN the user selects a Sort_Mode, THE Dashboard SHALL save the Sort_Mode preference to Local_Storage.
+4. WHEN the Dashboard loads, THE Dashboard SHALL retrieve the saved Sort_Mode from Local_Storage and apply the saved Sort_Mode to the displayed Tasks.
+5. IF Local_Storage contains no saved Sort_Mode on load, THEN THE To_Do_List SHALL default to creation order.
+6. WHEN the To_Do_List reorders Tasks according to a Sort_Mode, THE To_Do_List SHALL preserve all Task text and completion status without loss.
+
+### Requirement 12: Prevent Duplicate Tasks
+
+**User Story:** As a user, I want to be prevented from adding a task with text identical to an existing task, so that my task list does not contain duplicates.
+
+#### Acceptance Criteria
+
+1. IF the user submits new task text that, after trimming leading and trailing whitespace and ignoring case, is identical to the text of an existing Task, THEN THE To_Do_List SHALL reject the submission, add no Task, and display an error message indicating the task already exists.
+2. IF the user submits modified task text that, after trimming leading and trailing whitespace and ignoring case, is identical to the text of another existing Task, THEN THE To_Do_List SHALL reject the modification, retain the original Task text, and display an error message indicating the task already exists.

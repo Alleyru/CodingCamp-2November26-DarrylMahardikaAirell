@@ -2,7 +2,7 @@
 
 ## Overview
 
-The To-Do List Life Dashboard is a single-page, client-side web application built with plain HTML, CSS, and vanilla JavaScript. It provides four widgets on a single homepage-style interface: a time-based greeting, a 25-minute focus timer, a to-do list, and quick links to favorite websites. All user data (tasks and quick links) persists across sessions using the browser Local Storage API. The application has no backend server and uses no JavaScript frameworks or libraries.
+The To-Do List Life Dashboard is a single-page, client-side web application built with plain HTML, CSS, and vanilla JavaScript. It provides four widgets on a single homepage-style interface: a time-based greeting, a 25-minute focus timer, a to-do list, and quick links to favorite websites. Users can toggle between dark and light themes, sort their tasks by creation order, completion status, or alphabetical order, and are prevented from creating duplicate tasks. All user data (tasks, quick links, theme preference, and sort preference) persists across sessions using the browser Local Storage API. The application has no backend server and uses no JavaScript frameworks or libraries.
 
 This document describes the architecture, component design, data models, correctness properties, error handling, and testing strategy for the Dashboard.
 
@@ -12,7 +12,10 @@ This document describes the architecture, component design, data models, correct
 - **Reliability**: Data persistence is robust against localStorage unavailability and quota limits, retaining session data in memory when storage fails.
 - **Accuracy**: The focus timer anchors to wall-clock time to prevent drift from `setInterval` throttling in background tabs.
 - **Accessibility**: Body text is at least 16px with a contrast ratio of at least 4.5:1.
-- **Testability**: Pure logic functions are separated from DOM and I/O concerns to enable property-based testing of validation, formatting, and serialization.
+- **Theming**: A single toggle switches between dark and light mode using CSS custom properties driven by a `data-theme` attribute, persisted to localStorage with a light-mode default.
+- **Sorting**: Tasks can be reordered by creation order, completion status, or alphabetical order through a pure, stable sort that never loses task data.
+- **Integrity**: Duplicate tasks are rejected using a case-insensitive, trimmed comparison so the task list never contains duplicate entries.
+- **Testability**: Pure logic functions are separated from DOM and I/O concerns to enable property-based testing of validation, formatting, serialization, sorting, and theme logic.
 
 ### Scope and Constraints
 
@@ -36,6 +39,14 @@ Browsers can make localStorage unavailable in several ways: not exposing it on t
 
 Source: [Handling localStorage errors](https://mmazzarolo.com/blog/2022-06-25-local-storage-status), [MDN Web Storage API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API/Using_the_Web_Storage_API)
 
+### Theme Switching with CSS Custom Properties
+
+Modern theme switching defines color as semantic CSS custom properties (variables) by function rather than literal value, then overrides those values under a `[data-theme="dark"]` selector. A single `data-theme` attribute on the root element controls which token set is active, so the whole palette updates in one place and the switch is instant. Setting the `color-scheme` CSS property alongside the attribute tells the browser to adapt native UI surfaces such as scrollbars and form controls to the chosen scheme.
+
+The Dashboard defaults to light mode when no saved preference exists (AC 10.7), so the implementation does not consult the `prefers-color-scheme` media query. Instead, the ThemeManager reads the saved theme from localStorage at startup, resolves it to `'light'` when missing or invalid, and sets both the `data-theme` attribute and `color-scheme` before first paint. The toggle button flips the attribute and persists the new value.
+
+Sources: [The Perfect Theme Switch Component](https://www.aleksandrhovhannisyan.com/blog/the-perfect-theme-switch/), [Modern Web Guidance - Dark mode toggle (Chrome Developers)](https://developer.chrome.com/docs/modern-web-guidance/guides/ui-components/dark-mode-toggle)
+
 ## Architecture
 
 ### High-Level Architecture
@@ -58,6 +69,7 @@ graph TB
         FT[FocusTimer]
         TD[TodoList]
         QL[QuickLinks]
+        TM[ThemeManager]
         SS[StorageService]
     end
 
@@ -67,14 +79,17 @@ graph TB
     App -->|"init"| FT
     App -->|"init"| TD
     App -->|"init"| QL
+    App -->|"init"| TM
 
     GW -->|"render"| DOM
     FT -->|"render"| DOM
     TD -->|"render"| DOM
     QL -->|"render"| DOM
+    TM -->|"apply data-theme"| DOM
 
     TD -->|"save / load"| SS
     QL -->|"save / load"| SS
+    TM -->|"save / load"| SS
     SS -->|"try / catch"| LS
 ```
 
@@ -93,11 +108,12 @@ graph TB
 
 Since the project requires exactly one JavaScript file (Requirement 7), the code is organized into logical sections within `app.js` using an IIFE namespace pattern. Each module is a self-contained object with a clear interface:
 
-- **StorageService**: localStorage feature detection, save/load with error handling, JSON serialization
+- **StorageService**: localStorage feature detection, save/load with error handling, JSON serialization for tasks, links, theme, and sort preferences
 - **GreetingWidget**: time/date display and greeting logic
 - **FocusTimer**: 25-minute countdown state machine
-- **TodoList**: task CRUD with validation and rendering
+- **TodoList**: task CRUD with validation, duplicate detection, stable sorting, and rendering
 - **QuickLinks**: link CRUD with validation and rendering
+- **ThemeManager**: dark/light theme toggle, persistence, and CSS custom-property application
 - **App**: bootstrap, module initialization, data loading on page load
 
 ### Separation of Concerns
@@ -106,10 +122,10 @@ Pure logic functions are separated from DOM manipulation and I/O to maximize tes
 
 | Layer | Responsibility | PBT Suitable |
 |-------|---------------|--------------|
-| Pure logic | Greeting determination, time/date formatting, timer formatting, text/URL validation, serialization | Yes |
-| State management | Timer state machine transitions, list operations (add/remove/toggle) | Yes (state transitions) |
-| DOM rendering | Updating elements, event handling, rendering task/link rows | No |
-| I/O | localStorage read/write, window.open | No |
+| Pure logic | Greeting determination, time/date formatting, timer formatting, text/URL validation, task duplicate detection, task sorting, theme toggle/resolution, contrast computation, serialization | Yes |
+| State management | Timer state machine transitions, list operations (add/remove/toggle), sort-mode selection, theme state | Yes (state transitions) |
+| DOM rendering | Updating elements, event handling, rendering task/link rows, applying `data-theme` attribute | No |
+| I/O | localStorage read/write (tasks, links, theme, sort mode), window.open | No |
 
 ### Design Decisions and Rationale
 
@@ -122,6 +138,12 @@ Pure logic functions are separated from DOM manipulation and I/O to maximize tes
 4. **Event delegation**: Task and link lists use a single event listener on the container element rather than one listener per row. This keeps the DOM lightweight as lists grow and avoids re-binding listeners after every render.
 
 5. **ID generation**: Uses `crypto.randomUUID()` when available, falling back to a timestamp-plus-random-string generator for older browsers. This ensures stable unique IDs across sessions.
+
+6. **CSS custom properties for theming**: Theme tokens are defined as semantic CSS variables on `:root` and overridden under `[data-theme="dark"]`. The ThemeManager flips a single `data-theme` attribute on the root element and sets `color-scheme`, so the entire palette updates in one place. This keeps theme logic out of per-component CSS and makes the toggle instant.
+
+7. **Canonical array plus sorted view for tasks**: The TodoList maintains one canonical task array in creation order and derives the displayed order through a pure `sortTasks` function. All sorts are stable (ties preserve creation order), so reordering never mutates or loses task data. This makes the "sorting preserves all task data" requirement (AC 11.6) a direct consequence of the design.
+
+8. **Normalized duplicate comparison**: Duplicate detection trims leading and trailing whitespace and compares case-insensitively via a shared `normalizeTaskText` function used by both add and edit. When editing, the task being edited is excluded from the comparison so a task can be saved with its own current text. This keeps the duplicate rule consistent across both paths (AC 12.1, 12.2).
 
 ## Components and Interfaces
 
@@ -141,16 +163,30 @@ StorageService = {
   // Save the quick link list. Same contract as saveTasks.
   saveLinks(links: QuickLink[]): { success: boolean, error?: string }
 
+  // Save the active theme ('light' | 'dark'). Same contract as saveTasks.
+  saveTheme(theme: Theme): { success: boolean, error?: string }
+
+  // Save the selected sort mode. Same contract as saveTasks.
+  saveSortMode(mode: SortMode): { success: boolean, error?: string }
+
   // Load tasks from localStorage. Returns an empty array if no data,
   // unavailable, or unparseable.
   loadTasks(): Task[]
 
   // Load quick links from localStorage. Same contract as loadTasks.
   loadLinks(): QuickLink[]
+
+  // Load the saved theme. Returns 'light' (the default) if no data,
+  // unavailable, or unparseable.
+  loadTheme(): Theme
+
+  // Load the saved sort mode. Returns 'creation' (the default) if no
+  // data, unavailable, or unparseable.
+  loadSortMode(): SortMode
 }
 ```
 
-**Storage keys**: `'tdl-tasks'` maps to a JSON-encoded `Task[]`, `'tdl-links'` maps to a JSON-encoded `QuickLink[]`.
+**Storage keys**: `'tdl-tasks'` maps to a JSON-encoded `Task[]`, `'tdl-links'` maps to a JSON-encoded `QuickLink[]`, `'tdl-theme'` maps to a JSON-encoded `Theme` string, `'tdl-sort'` maps to a JSON-encoded `SortMode` string.
 
 ### GreetingWidget
 
@@ -226,22 +262,47 @@ Key behaviors derived from requirements:
 
 ### TodoList
 
-Manages tasks with add, edit, toggle-complete, and delete operations, persisting to localStorage on every change.
+Manages tasks with add, edit, toggle-complete, and delete operations, plus duplicate detection and sorting, persisting to localStorage on every change.
 
 ```
 TodoList = {
   init(container: HTMLElement): void
 
+  // addTask and editTask reject duplicates (AC 12.1, 12.2) in addition
+  // to length and whitespace validation (AC 3.6, 3.8).
   addTask(text: string): { success: boolean, error?: string }
   editTask(id: string, newText: string): { success: boolean, error?: string }
   toggleTask(id: string): void
   deleteTask(id: string): void
   getTasks(): Task[]
 
+  // Sort mode control (AC 11.1, 11.2).
+  setSortMode(mode: SortMode): void
+  getSortMode(): SortMode
+
   // --- Pure functions (exported for testing) ---
 
   // Validates task text: rejects empty, whitespace-only, or >200 chars.
   validateTaskText(text: string): { valid: boolean, error?: string }
+
+  // Normalizes task text for duplicate comparison: trims leading and
+  // trailing whitespace and lowercases (AC 12.1, 12.2).
+  normalizeTaskText(text: string): string
+
+  // Returns true when normalized `text` matches an existing task other
+  // than `excludeId` (undefined for add). Used by addTask and editTask.
+  isDuplicateText(text: string, tasks: Task[], excludeId?: string): boolean
+
+  // Returns a new task array reordered for the given sort mode. Stable:
+  // ties preserve creation (input) order. Never mutates the input.
+  //   'creation'     -> input order unchanged
+  //   'completion'   -> incomplete tasks first, then complete, ties by creation order
+  //   'alphabetical' -> case-insensitive by text, ties by creation order
+  sortTasks(tasks: Task[], mode: SortMode): Task[]
+
+  // Resolves a stored sort-mode string to a valid SortMode, defaulting
+  // to 'creation' when missing or invalid (AC 11.5).
+  resolveSortMode(saved: string | null): SortMode
 
   // Serializes a Task[] to a JSON string.
   serializeTasks(tasks: Task[]): string
@@ -286,6 +347,43 @@ QuickLinks = {
 }
 ```
 
+### ThemeManager
+
+Manages the dark/light theme toggle, applies it to the DOM via a `data-theme` attribute and `color-scheme`, and persists the preference to localStorage.
+
+```
+ThemeManager = {
+  init(toggleButton: HTMLElement): void
+
+  // Flips the current theme and persists it (AC 10.2, 10.5).
+  toggle(): void
+
+  // Explicitly applies a theme (used on load from a saved preference).
+  applyTheme(theme: Theme): void
+
+  getTheme(): Theme
+
+  // --- Pure functions (exported for testing) ---
+
+  // Returns the opposite theme: 'light' <-> 'dark'.
+  toggleTheme(current: Theme): Theme
+
+  // Resolves a stored theme string to a valid Theme, defaulting to
+  // 'light' when missing or invalid (AC 10.7).
+  resolveTheme(saved: string | null): Theme
+
+  // Returns the color tokens for a theme. Used to verify polarity and
+  // contrast (AC 10.3, 10.4, 10.8).
+  getThemeColors(theme: Theme): { bg: string, text: string }
+
+  // Computes the WCAG 2.x contrast ratio between two CSS colors.
+  // Returns a number >= 1.
+  contrastRatio(foreground: string, background: string): number
+}
+```
+
+The toggle button flips `data-theme` between `'dark'` and `'light'` on the root element and sets `style.colorScheme` so native UI surfaces (scrollbars, form controls) adapt. Both themes define semantic tokens (background, text) whose contrast ratio is at least 4.5:1 (AC 10.8).
+
 ### App
 
 Bootstrap controller that initializes all modules and loads saved data on page load.
@@ -294,9 +392,12 @@ Bootstrap controller that initializes all modules and loads saved data on page l
 App = {
   init(): void
   // 1. Feature-detect localStorage via StorageService
-  // 2. Load saved tasks and links; pass to TodoList and QuickLinks
-  // 3. Initialize GreetingWidget, FocusTimer, TodoList, QuickLinks
-  // 4. Wire up cross-module save callbacks
+  // 2. Load saved tasks, links, theme, and sort mode
+  // 3. Apply the saved theme (data-theme + color-scheme) before first paint
+  // 4. Initialize GreetingWidget, FocusTimer, TodoList, QuickLinks, ThemeManager
+  // 5. Pass loaded tasks/links to TodoList/QuickLinks and the saved sort
+  //    mode to TodoList; apply the saved theme to ThemeManager
+  // 6. Wire up cross-module save callbacks (tasks, links, theme, sort mode)
 }
 ```
 
@@ -338,16 +439,44 @@ interface QuickLink {
 - Empty-name error takes priority over duplicate-URL error (AC 4.8)
 - Maximum 20 links (AC 4.7): when `links.length === 20`, the add control is disabled
 
+### Theme
+
+The active visual color scheme.
+
+```
+type Theme = 'light' | 'dark'
+```
+
+- `'light'` (default): light background color with dark text (AC 10.4, 10.7).
+- `'dark'`: dark background color with light text (AC 10.3).
+- Both themes maintain a text-to-background contrast ratio of at least 4.5:1 (AC 10.8).
+
+### SortMode
+
+The ordering applied to the To_Do_List.
+
+```
+type SortMode = 'creation' | 'completion' | 'alphabetical'
+```
+
+- `'creation'` (default): the canonical insertion order of the task array (AC 11.5).
+- `'completion'`: incomplete tasks first, then complete tasks, ties broken by creation order (stable).
+- `'alphabetical'`: ascending, case-insensitive order by task text, ties broken by creation order (stable).
+
+All sort modes are stable: tasks that compare equal retain their relative creation order, and reordering never mutates or loses task text or completion status (AC 11.6).
+
 ### Serialized Storage Format
 
-Tasks and links are stored as JSON strings under dedicated keys:
+Tasks, links, theme, and sort preference are stored as JSON strings under dedicated keys:
 
 ```
 localStorage['tdl-tasks'] = '[{"id":"...","text":"...","completed":false}, ...]'
 localStorage['tdl-links'] = '[{"id":"...","name":"...","url":"https://..."}, ...]'
+localStorage['tdl-theme'] = '"dark"'
+localStorage['tdl-sort'] = '"alphabetical"'
 ```
 
-On load, each key is read and parsed. If the key is missing, the value is empty, or parsing produces invalid data, an empty array is used (AC 5.4, 5.7).
+On load, each key is read and parsed. If a key is missing, the value is empty, or parsing produces invalid data, the list keys yield an empty array (AC 5.4, 5.7), the theme key yields `'light'` (AC 10.7), and the sort key yields `'creation'` (AC 11.5).
 
 ## Correctness Properties
 
@@ -451,6 +580,54 @@ The following properties apply to the pure logic functions extracted from the Da
 
 **Validates: Requirements 5.4, 5.7**
 
+### Property 17: Theme toggle is an involution that always flips the value
+
+*For any* theme `t` in `{'light', 'dark'}`, `toggleTheme(t)` SHALL return the opposite of `t`, and `toggleTheme(toggleTheme(t))` SHALL equal `t`.
+
+**Validates: Requirements 10.2**
+
+### Property 18: Theme resolution defaults to light mode
+
+*For any* stored theme string `s` (including missing, null, or invalid values), `resolveTheme(s)` SHALL return `s` when `s` is `'light'` or `'dark'`, and SHALL return `'light'` for all other inputs.
+
+**Validates: Requirements 10.7**
+
+### Property 19: Theme color polarity matches the active mode
+
+*For any* theme, `getThemeColors(theme)` SHALL return a background and text whose relative-luminance polarity matches the theme: dark mode yields a dark background (low luminance) and light text (high luminance), and light mode yields a light background (high luminance) and dark text (low luminance).
+
+**Validates: Requirements 10.3, 10.4**
+
+### Property 20: Theme contrast ratio meets 4.5:1
+
+*For any* theme, `contrastRatio(getThemeColors(theme).text, getThemeColors(theme).bg)` SHALL be at least 4.5.
+
+**Validates: Requirements 10.8**
+
+### Property 21: Sort reorders tasks per the selected mode
+
+*For any* task list and `SortMode`, `sortTasks(tasks, mode)` SHALL return an array ordered according to the mode: `'creation'` preserves input order; `'completion'` places incomplete tasks before complete tasks with ties broken by input order; `'alphabetical'` orders by case-insensitive task text with ties broken by input order.
+
+**Validates: Requirements 11.2**
+
+### Property 22: Sorting preserves all task data
+
+*For any* task list and `SortMode`, `sortTasks(tasks, mode)` SHALL return a permutation of the input: the output contains exactly the same tasks by `id` as the input, and each task's `text` and `completed` status SHALL be unchanged.
+
+**Validates: Requirements 11.6**
+
+### Property 23: Sort mode resolution defaults to creation order
+
+*For any* stored sort-mode string `s` (including missing, null, or invalid values), `resolveSortMode(s)` SHALL return `s` when `s` is a valid `SortMode`, and SHALL return `'creation'` for all other inputs.
+
+**Validates: Requirements 11.5**
+
+### Property 24: Duplicate task detection rejects matching normalized text
+
+*For any* task text `t`, task list `T`, and optional `excludeId`, `isDuplicateText(t, T, excludeId)` SHALL return true if and only if `normalizeTaskText(t)` equals `normalizeTaskText(x.text)` for some task `x` in `T` whose `id` differs from `excludeId`. The add path supplies no `excludeId`; the edit path excludes the task being edited.
+
+**Validates: Requirements 12.1, 12.2**
+
 ## Error Handling
 
 The Dashboard handles errors at three layers: input validation, storage failures, and corrupt persisted data.
@@ -458,6 +635,8 @@ The Dashboard handles errors at three layers: input validation, storage failures
 ### Input Validation Errors
 
 **Invalid task text (AC 3.6, 3.8):** When the user submits task text that is empty, whitespace-only, or exceeds 200 characters, the To_Do_List rejects the submission, adds no task (or retains the original text on edit), and displays an error message: "Task text must be between 1 and 200 characters."
+
+**Duplicate task (AC 12.1, 12.2):** When the user submits new or modified task text that, after trimming leading and trailing whitespace and ignoring case, is identical to an existing task's text (other than the task being edited), the To_Do_List rejects the submission, adds no task (or retains the original text on edit), and displays an error message: "This task already exists." Duplicate detection runs after length and whitespace validation, so an empty or over-length submission reports the length error first.
 
 **Invalid quick link (AC 4.5, 4.6, 4.8):** When the user submits a quick link with an empty name or a URL not beginning with `http://` or `https://`, the Quick_Links component rejects the submission and displays an inline error indicating which field is invalid. When the URL duplicates an existing link's URL, it displays a duplicate-URL error. When both an empty name and a duplicate URL are present, the invalid-field error is shown with priority over the duplicate-URL error.
 
@@ -483,7 +662,7 @@ Error messages are displayed inline within the relevant widget (near the input f
 
 The Dashboard uses both property-based tests and example-based/integration tests for comprehensive coverage:
 
-- **Property-based tests** verify universal properties of pure logic functions (validation, formatting, serialization, state transitions) across a wide input space.
+- **Property-based tests** verify universal properties of pure logic functions (validation, formatting, serialization, state transitions, sorting, theme logic, duplicate detection) across a wide input space.
 - **Unit tests** verify specific examples, edge cases, and integration points between components.
 - **Integration tests** verify DOM rendering, localStorage I/O, and cross-component wiring.
 - **Smoke tests** verify project structure, technology stack constraints, and one-time setup.
@@ -499,7 +678,7 @@ The Dashboard uses both property-based tests and example-based/integration tests
 - Each property test is tagged with a comment referencing the design property it validates.
 - Tag format: `// Feature: todo-life-dashboard, Property N: <property description>`
 
-**Testable properties** are the 16 correctness properties defined above. Each property maps to a single property-based test:
+**Testable properties** are the 24 correctness properties defined above. Each property maps to a single property-based test:
 
 | Property | Function Under Test | Input Generator |
 |----------|-------------------|-----------------|
@@ -519,6 +698,14 @@ The Dashboard uses both property-based tests and example-based/integration tests
 | 14 - Link delete | delete operation | Link lists with arbitrary links |
 | 15 - Round-trip | serialize/deserialize | Arbitrary `Task[]` and `QuickLink[]` |
 | 16 - Deserialization errors | deserialize | Missing keys, empty strings, invalid JSON |
+| 17 - Theme toggle involution | `toggleTheme` | Themes `'light'` and `'dark'` |
+| 18 - Theme resolution default | `resolveTheme` | Arbitrary strings incl. null and junk |
+| 19 - Theme color polarity | `getThemeColors` | Themes `'light'` and `'dark'` |
+| 20 - Theme contrast ratio | `contrastRatio` + `getThemeColors` | Themes `'light'` and `'dark'` |
+| 21 - Sort ordering | `sortTasks` | Arbitrary task lists + SortMode |
+| 22 - Sort permutation | `sortTasks` | Arbitrary task lists + SortMode |
+| 23 - Sort mode resolution default | `resolveSortMode` | Arbitrary strings incl. null and junk |
+| 24 - Duplicate detection | `isDuplicateText` + `normalizeTaskText` | Arbitrary text, task lists, optional excludeId |
 
 ### Unit Tests
 
@@ -529,6 +716,11 @@ Unit tests cover specific examples and edge cases not fully exercised by propert
 - Quick link max limit at exactly 20 (AC 4.7 edge case)
 - Boundary values: task text at exactly 200 characters (valid) vs 201 (invalid)
 - URL validation: `http://` accepted, `https://` accepted, `ftp://` rejected, `javascript:` rejected
+- Theme toggle button is rendered and flips the theme on click (AC 10.1, 10.2)
+- Sort control is rendered with creation, completion, and alphabetical options (AC 11.1)
+- Duplicate add: a case-insensitive, trimmed duplicate shows the error and adds no task (AC 12.1)
+- Duplicate edit: editing to a duplicate retains the original and excludes the task being edited (AC 12.2)
+- Duplicate vs. length priority: an empty or over-length duplicate reports the length error first
 
 ### Integration Tests
 
@@ -542,6 +734,11 @@ Integration tests verify DOM rendering and I/O behavior using the jsdom environm
 - Loading the dashboard populates widgets from localStorage (AC 5.3)
 - Quota exceeded: mocked `setItem` throws, verify in-memory data retained and error shown (AC 5.6)
 - localStorage unavailable: feature detection fails, verify error shown and data in memory (AC 6.5)
+- Toggling the theme calls `StorageService.saveTheme` and applies `data-theme`/`color-scheme` (AC 10.2, 10.5)
+- Loading the dashboard applies the saved theme, defaulting to light mode when none is saved (AC 10.6, 10.7)
+- Selecting a sort mode calls `StorageService.saveSortMode` and re-renders the list in order (AC 11.2, 11.3)
+- Loading the dashboard applies the saved sort mode, defaulting to creation order when none is saved (AC 11.4, 11.5)
+- Duplicate task submissions display the inline error message (AC 12.1, 12.2)
 
 ### Smoke Tests
 
@@ -554,6 +751,8 @@ Smoke tests verify structural and constraint requirements:
 - localStorage is the sole persistence mechanism, no fetch/XHR (AC 6.4)
 - Body text computed font-size is at least 16px (AC 9.4)
 - Text-to-background contrast ratio is at least 4.5:1 (AC 9.4)
+- Theme toggle button is present in the DOM (AC 10.1)
+- Sort control is present with exactly three options (AC 11.1)
 
 ### Cross-Browser and Performance Testing
 
@@ -566,9 +765,10 @@ tests/
 ├── unit/
 │   ├── greeting.test.js        # Properties 1-3, greeting unit tests
 │   ├── timer.test.js            # Properties 4-8, timer unit tests
-│   ├── todo.test.js             # Properties 9-12, task unit tests
+│   ├── todo.test.js             # Properties 9-12, 21-24, task unit tests
 │   ├── quicklinks.test.js       # Properties 13-14, link unit tests
-│   └── storage.test.js           # Properties 15-16, serialization tests
+│   ├── theme.test.js            # Properties 17-20, theme unit tests
+│   └── storage.test.js          # Properties 15-16, serialization tests
 ├── integration/
 │   ├── dom.test.js              # DOM rendering and interaction tests
 │   └── storage-io.test.js       # localStorage I/O with mocks

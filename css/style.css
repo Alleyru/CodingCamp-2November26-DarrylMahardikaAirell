@@ -1,0 +1,435 @@
+/* ==========================================================================
+   To-Do List Life Dashboard — Stylesheet
+   ==========================================================================
+   Single CSS file for the project (Requirement 7.1).
+
+   Theme tokens are defined as semantic CSS custom properties on :root
+   (light mode default) and overridden under [data-theme="dark"].
+   The data-theme attribute is set on the root <html> element by ThemeManager.
+
+   Theme color values (used by ThemeManager.getThemeColors for verification):
+     Light:  bg=#ffffff, text=#1a1a1a  → contrast ~17.3:1
+     Dark:   bg=#1a1a1a, text=#f0f0f0  → contrast ~14.8:1
+   Both exceed the 4.5:1 minimum (AC 10.8, 9.4).
+   ========================================================================== */
+
+/* ===== Theme Tokens (CSS Custom Properties) ============================== */
+
+:root {
+  /* Core theme tokens — must maintain >= 4.5:1 contrast (AC 9.4, 10.8) */
+  --bg: #ffffff;
+  --text: #1a1a1a;
+
+  /* Surface tokens — widget container backgrounds */
+  --surface: #f5f5f7;
+  --surface-border: #d0d0d4;
+
+  /* Accent tokens — buttons and interactive elements */
+  --accent: #3b6ea5;
+  --accent-hover: #2f5a85;
+  --accent-text: #ffffff;
+
+  /* Input tokens */
+  --input-bg: #ffffff;
+  --input-border: #c0c0c4;
+  --input-focus-border: #3b6ea5;
+
+  /* Error tokens */
+  --error: #b91c1c;
+  --error-bg: #fef2f2;
+  --error-border: #f5b8b8;
+
+  /* Muted text — completed tasks and secondary info */
+  --muted: #6b6b6b;
+
+  /* Layout tokens */
+  --radius: 8px;
+  --radius-sm: 4px;
+  --gap: 1.5rem;
+  --padding: 1.25rem;
+  --max-width: 1200px;
+
+  /* Native UI surface adaptation (AC: color-scheme alongside data-theme) */
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  /* Core theme tokens — dark mode (AC 10.3: dark bg, light text) */
+  --bg: #1a1a1a;
+  --text: #f0f0f0;
+
+  /* Surface tokens */
+  --surface: #262628;
+  --surface-border: #3a3a3e;
+
+  /* Accent tokens */
+  --accent: #6b9fd5;
+  --accent-hover: #85b3e5;
+  --accent-text: #1a1a1a;
+
+  /* Input tokens */
+  --input-bg: #2a2a2c;
+  --input-border: #4a4a4e;
+  --input-focus-border: #6b9fd5;
+
+  /* Error tokens */
+  --error: #f08080;
+  --error-bg: #2a1a1a;
+  --error-border: #5a2a2a;
+
+  /* Muted text */
+  --muted: #999999;
+
+  /* Native UI surface adaptation */
+  color-scheme: dark;
+}
+
+/* ===== Reset / Base ======================================================= */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+  font-size: 16px; /* AC 9.4: body text at least 16px */
+  line-height: 1.6;
+  color: var(--text); /* AC 9.4, 10.4: contrast >= 4.5:1 (light mode) */
+  background-color: var(--bg); /* AC 9.4, 10.3: contrast >= 4.5:1 (dark mode) */
+  min-height: 100vh;
+  padding: 1.5rem;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.3;
+  font-weight: 600;
+}
+
+/* ===== Layout ============================================================= */
+
+/* Page header with theme toggle */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: var(--max-width);
+  margin: 0 auto var(--gap);
+  padding: 0 0.5rem;
+}
+
+.dashboard-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* Main grid containing the four widgets (AC 9.3: distinct, non-overlapping) */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--gap);
+  max-width: var(--max-width);
+  margin: 0 auto;
+}
+
+/* ===== Widget Containers (AC 9.3) ========================================= */
+
+.widget {
+  background-color: var(--surface);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius);
+  padding: var(--padding);
+}
+
+.widget-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--text);
+}
+
+/* ===== Greeting Widget ==================================================== */
+
+.greeting-widget .greeting-time {
+  font-size: 2rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.greeting-widget .greeting-date {
+  font-size: 1rem;
+  color: var(--muted);
+  margin-top: 0.25rem;
+}
+
+.greeting-widget .greeting-text {
+  font-size: 1.25rem;
+  margin-top: 0.5rem;
+  color: var(--text);
+}
+
+/* ===== Focus Timer ======================================================== */
+
+.focus-timer .timer-display {
+  font-size: 3rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  color: var(--text);
+  letter-spacing: 0.05em;
+  margin-bottom: 1rem;
+}
+
+.timer-controls {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+/* ===== Todo List ========================================================== */
+
+.todo-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.todo-form input[type="text"] {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Sort control */
+.sort-control {
+  margin-bottom: 1rem;
+}
+
+.sort-control label {
+  display: block;
+  font-size: 0.875rem;
+  color: var(--muted);
+  margin-bottom: 0.25rem;
+}
+
+.sort-control select {
+  width: 100%;
+  cursor: pointer;
+}
+
+/* Task list */
+.task-list {
+  list-style: none;
+}
+
+.task-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0;
+  border-bottom: 1px solid var(--surface-border);
+}
+
+.task-row:last-child {
+  border-bottom: none;
+}
+
+.task-row .task-checkbox {
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+
+.task-row .task-text {
+  flex: 1;
+  min-width: 0;
+  color: var(--text);
+  word-break: break-word;
+}
+
+/* Completed task styling */
+.task-row.completed .task-text {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+
+/* Edit input that replaces text when editing */
+.task-row .task-edit-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.task-row .task-edit,
+.task-row .task-delete {
+  flex-shrink: 0;
+}
+
+/* ===== Quick Links ======================================================== */
+
+.link-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.link-form input[type="text"],
+.link-form input[type="url"] {
+  flex: 1;
+  min-width: 120px;
+}
+
+.link-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* Link buttons — clickable shortcuts to favorite websites (AC 4.1) */
+.link-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ===== Form Inputs ======================================================== */
+
+input[type="text"],
+input[type="url"],
+select {
+  font-size: 16px; /* AC 9.4: at least 16px */
+  padding: 0.5rem 0.625rem;
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--input-bg);
+  color: var(--text);
+  font-family: inherit;
+  line-height: 1.5;
+}
+
+input[type="text"]::placeholder,
+input[type="url"]::placeholder {
+  color: var(--muted);
+}
+
+/* ===== Buttons ============================================================ */
+
+button {
+  font-size: 16px;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  background-color: var(--accent);
+  color: var(--accent-text);
+  cursor: pointer;
+  font-family: inherit;
+  line-height: 1.5;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+button:hover:not(:disabled) {
+  background-color: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Secondary / small buttons — edit and delete controls */
+.task-edit,
+.task-delete,
+.link-delete {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  background-color: transparent;
+  color: var(--text);
+  border: 1px solid var(--input-border);
+}
+
+.task-edit:hover,
+.task-delete:hover,
+.link-delete:hover {
+  background-color: var(--surface-border);
+  border-color: var(--surface-border);
+}
+
+/* Destructive delete buttons get error tint */
+.task-delete,
+.link-delete {
+  color: var(--error);
+  border-color: var(--error-border);
+}
+
+/* Theme toggle button */
+.theme-toggle {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  white-space: nowrap;
+}
+
+/* ===== Error Messages ===================================================== */
+
+/* Inline error messages within widgets (AC 3.6, 4.5, 4.8, 5.6, 12.1) */
+.error-message {
+  font-size: 16px; /* AC 9.4: at least 16px */
+  color: var(--error);
+  background-color: var(--error-bg);
+  border: 1px solid var(--error-border);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.75rem;
+  margin-top: 0.5rem;
+}
+
+/* Hide error container when empty */
+.error-message:empty {
+  display: none;
+}
+
+/* ===== Focus States (Accessibility) ====================================== */
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--input-focus-border);
+  outline-offset: 2px;
+}
+
+/* ===== Responsive ========================================================= */
+
+@media (max-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-header {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+}
+
+/* ===== Reduced Motion ===================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Life Dashboard</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="dashboard-header">
+    <h1>Life Dashboard</h1>
+    <button id="theme-toggle" type="button" aria-label="Toggle dark and light theme">
+      Toggle Theme
+    </button>
+  </header>
+
+  <main class="dashboard-main">
+    <!-- Greeting Widget: current time, date, and time-based greeting -->
+    <section id="greeting-widget" class="widget" aria-label="Greeting">
+      <div id="greeting-time" class="greeting-time" aria-live="polite"></div>
+      <div id="greeting-date" class="greeting-date"></div>
+      <div id="greeting-text" class="greeting-text" aria-live="polite"></div>
+    </section>
+
+    <!-- Focus Timer: 25-minute countdown with Start, Stop, and Reset controls -->
+    <section id="focus-timer" class="widget" aria-label="Focus Timer">
+      <div id="timer-display" class="timer-display" aria-live="polite" aria-atomic="true">25:00</div>
+      <div class="timer-controls">
+        <button id="timer-start" type="button">Start</button>
+        <button id="timer-stop" type="button">Stop</button>
+        <button id="timer-reset" type="button">Reset</button>
+      </div>
+    </section>
+
+    <!-- Todo List: task input form, task list, and sort mode control -->
+    <section id="todo-list" class="widget" aria-label="To-Do List">
+      <h2>Tasks</h2>
+      <form id="task-form" class="task-form">
+        <label for="task-input">Add a task</label>
+        <input id="task-input" type="text" name="task" placeholder="Enter task text..." maxlength="200" autocomplete="off">
+        <button type="submit">Add</button>
+      </form>
+      <p id="task-error" class="error-message" role="alert" aria-live="assertive"></p>
+      <ul id="task-list" class="task-list" aria-label="Task list"></ul>
+      <div class="sort-control">
+        <label for="sort-mode">Sort by</label>
+        <select id="sort-mode" name="sort-mode">
+          <option value="creation">Creation order</option>
+          <option value="completion">Completion status</option>
+          <option value="alphabetical">Alphabetical</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- Quick Links: link input form and link buttons -->
+    <section id="quick-links" class="widget" aria-label="Quick Links">
+      <h2>Quick Links</h2>
+      <form id="link-form" class="link-form">
+        <label for="link-name">Name</label>
+        <input id="link-name" type="text" name="name" placeholder="Link name" autocomplete="off">
+        <label for="link-url">URL</label>
+        <input id="link-url" type="text" name="url" placeholder="https://example.com" autocomplete="off">
+        <button type="submit">Add Link</button>
+      </form>
+      <p id="link-error" class="error-message" role="alert" aria-live="assertive"></p>
+      <p id="link-max-message" class="max-message" aria-live="polite"></p>
+      <div id="link-list" class="link-list" aria-label="Quick links"></div>
+    </section>
+  </main>
+
+  <script src="js/app.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,3 @@
+# Integration tests — DOM rendering, widget interactions, and localStorage I/O.
+# Runs in the jsdom environment (configured via environmentMatchGlobs).
+# See design.md "Test File Organization".
