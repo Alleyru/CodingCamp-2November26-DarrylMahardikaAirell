@@ -1,149 +1,114 @@
-/* ==========================================================================
-   To-Do List Life Dashboard — Stylesheet
-   ==========================================================================
-   Single CSS file for the project (Requirement 7.1).
-
-   Theme tokens are defined as semantic CSS custom properties on :root
-   (light mode default) and overridden under [data-theme="dark"].
-   The data-theme attribute is set on the root <html> element by ThemeManager.
-
-   Theme color values (used by ThemeManager.getThemeColors for verification):
-     Light:  bg=#ffffff, text=#1a1a1a  → contrast ~17.3:1
-     Dark:   bg=#1a1a1a, text=#f0f0f0  → contrast ~14.8:1
-   Both exceed the 4.5:1 minimum (AC 10.8, 9.4).
-   ========================================================================== */
-
-/* ===== Theme Tokens (CSS Custom Properties) ============================== */
-
 :root {
-  /* Core theme tokens — must maintain >= 4.5:1 contrast (AC 9.4, 10.8) */
-  --bg: #ffffff;
-  --text: #1a1a1a;
+  --bg: #f5f5f3;
+  --text: #1f2328;
+  --muted: #666b72;
 
-  /* Surface tokens — widget container backgrounds */
-  --surface: #f5f5f7;
-  --surface-border: #d0d0d4;
+  --surface: #ffffff;
+  --surface-border: #e2e2de;
 
-  /* Accent tokens — buttons and interactive elements */
   --accent: #3b6ea5;
   --accent-hover: #2f5a85;
   --accent-text: #ffffff;
 
-  /* Input tokens */
   --input-bg: #ffffff;
-  --input-border: #c0c0c4;
-  --input-focus-border: #3b6ea5;
+  --input-border: #cfcfca;
 
-  /* Error tokens */
-  --error: #b91c1c;
-  --error-bg: #fef2f2;
-  --error-border: #f5b8b8;
+  --error: #b42318;
+  --error-bg: #fef3f2;
+  --error-border: #f5c2bd;
 
-  /* Muted text — completed tasks and secondary info */
-  --muted: #6b6b6b;
-
-  /* Layout tokens */
-  --radius: 8px;
-  --radius-sm: 4px;
-  --gap: 1.5rem;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --gap: 1.25rem;
   --padding: 1.25rem;
-  --max-width: 1200px;
+  --max-width: 1000px;
 
-  /* Native UI surface adaptation (AC: color-scheme alongside data-theme) */
   color-scheme: light;
 }
 
 [data-theme="dark"] {
-  /* Core theme tokens — dark mode (AC 10.3: dark bg, light text) */
-  --bg: #1a1a1a;
-  --text: #f0f0f0;
+  --bg: #161718;
+  --text: #ececec;
+  --muted: #9a9fa6;
 
-  /* Surface tokens */
-  --surface: #262628;
-  --surface-border: #3a3a3e;
+  --surface: #1e2022;
+  --surface-border: #2f3235;
 
-  /* Accent tokens */
   --accent: #6b9fd5;
   --accent-hover: #85b3e5;
-  --accent-text: #1a1a1a;
+  --accent-text: #101214;
 
-  /* Input tokens */
-  --input-bg: #2a2a2c;
-  --input-border: #4a4a4e;
-  --input-focus-border: #6b9fd5;
+  --input-bg: #161718;
+  --input-border: #3d4145;
 
-  /* Error tokens */
-  --error: #f08080;
-  --error-bg: #2a1a1a;
-  --error-border: #5a2a2a;
+  --error: #f19a92;
+  --error-bg: #2a1b19;
+  --error-border: #5a2e2a;
 
-  /* Muted text */
-  --muted: #999999;
-
-  /* Native UI surface adaptation */
   color-scheme: dark;
 }
 
-/* ===== Reset / Base ======================================================= */
+/* ===== Base =============================================================== */
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-html {
-  font-size: 16px;
-}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    Helvetica, Arial, sans-serif;
-  font-size: 16px; /* AC 9.4: body text at least 16px */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 16px;
   line-height: 1.6;
-  color: var(--text); /* AC 9.4, 10.4: contrast >= 4.5:1 (light mode) */
-  background-color: var(--bg); /* AC 9.4, 10.3: contrast >= 4.5:1 (dark mode) */
+  color: var(--text);
+  background-color: var(--bg);
   min-height: 100vh;
   padding: 1.5rem;
+  transition: background-color .2s ease, color .2s ease;
 }
 
-h1,
-h2,
-h3 {
-  line-height: 1.3;
-  font-weight: 600;
+h1, h2 { line-height: 2.3; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap;
 }
 
-/* ===== Layout ============================================================= */
+/* ===== Header ============================================================= */
 
-/* Page header with theme toggle */
 .dashboard-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   max-width: var(--max-width);
   margin: 0 auto var(--gap);
-  padding: 0 0.5rem;
 }
 
-.dashboard-title {
-  font-size: 1.5rem;
-  font-weight: 700;
+.dashboard-title { font-size: 2rem; font-weight: 600; }
+.dashboard-title span { color: var(--muted); margin: 0 .1em; font-weight: 400; }
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  background: transparent;
   color: var(--text);
+  border: 1px solid var(--input-border);
+}
+.theme-toggle:hover:not(:disabled) { background: var(--surface); border-color: var(--muted); }
+
+.theme-icon {
+  width: .95rem; height: .95rem; border-radius: 50%;
+  border: 2px solid currentColor;
+  background: linear-gradient(90deg, currentColor 50%, transparent 50%);
 }
 
-/* Main grid containing the four widgets (AC 9.3: distinct, non-overlapping) */
+/* ===== Layout ============================================================= */
+
 .dashboard-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: var(--gap);
   max-width: var(--max-width);
   margin: 0 auto;
+  align-items: start;
 }
-
-/* ===== Widget Containers (AC 9.3) ========================================= */
 
 .widget {
   background-color: var(--surface);
@@ -153,283 +118,212 @@ h3 {
 }
 
 .widget-title {
-  font-size: 1.125rem;
+  display: flex;
+  align-items: baseline;
+  gap: .6rem;
+  font-size: 1.05rem;
   font-weight: 600;
   margin-bottom: 1rem;
-  color: var(--text);
 }
 
-/* ===== Greeting Widget ==================================================== */
+.count { font-size: .85rem; font-weight: 400; color: var(--muted); }
 
-.greeting-widget .greeting-time {
-  font-size: 2rem;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  color: var(--text);
+/* ===== Greeting (centered, big clock) ===================================== */
+
+.greeting-widget {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 2.5rem 1.25rem;
 }
 
-.greeting-widget .greeting-date {
-  font-size: 1rem;
+.greeting-text {
+  font-size: 1.5rem;
+  font-weight: 500;
   color: var(--muted);
-  margin-top: 0.25rem;
 }
 
-.greeting-widget .greeting-text {
-  font-size: 1.25rem;
-  margin-top: 0.5rem;
-  color: var(--text);
+.greeting-time {
+  font-size: clamp(3.5rem, 5vw, 6.5rem);   /* <- change this line to resize the clock */
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin: .25rem 0;
 }
+
+.greeting-date { font-size: 1.05rem; color: var(--muted); }
 
 /* ===== Focus Timer ======================================================== */
 
-.focus-timer .timer-display {
-  font-size: 3rem;
-  font-weight: 700;
+.focus-timer { text-align: center; }
+.focus-timer .widget-title { justify-content: center; }
+
+.timer-display {
+  font-size: 3.5rem;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
-  text-align: center;
-  color: var(--text);
-  letter-spacing: 0.05em;
-  margin-bottom: 1rem;
+  line-height: 1.1;
 }
 
-.timer-controls {
-  display: flex;
-  gap: 0.5rem;
-  justify-content: center;
+.timer-bar {
+  height: 6px;
+  margin: 1rem 0 .6rem;
+  border-radius: 99px;
+  overflow: hidden;
+  background: var(--surface-border);
 }
+.timer-progress { height: 100%; width: 0%; background: var(--accent); transition: width .4s linear; }
 
-/* ===== Todo List ========================================================== */
+.timer-status { color: var(--muted); font-size: .95rem; margin-bottom: 1rem; min-height: 1.5em; }
+.focus-timer.running .timer-status { color: var(--accent); }
+.focus-timer.done .timer-display { color: var(--accent); }
 
-.todo-form {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
+.timer-controls { display: flex; gap: .5rem; justify-content: center; flex-wrap: wrap; }
 
-.todo-form input[type="text"] {
-  flex: 1;
-  min-width: 0;
-}
+/* ===== Tasks ============================================================== */
 
-/* Sort control */
-.sort-control {
-  margin-bottom: 1rem;
-}
+.todo-form, .link-form { display: flex; gap: .5rem; }
+.todo-form { margin-bottom: .75rem; }
+.todo-form input { flex: 1; min-width: 0; }
 
-.sort-control label {
-  display: block;
-  font-size: 0.875rem;
-  color: var(--muted);
-  margin-bottom: 0.25rem;
-}
+.sort-control { margin-top: 1rem; display: flex; align-items: center; gap: .75rem; }
+.sort-control label { font-size: .9rem; color: var(--muted); white-space: nowrap; }
+.sort-control select { flex: 1; cursor: pointer; }
 
-.sort-control select {
-  width: 100%;
-  cursor: pointer;
-}
-
-/* Task list */
-.task-list {
-  list-style: none;
-}
+.task-list { list-style: none; }
 
 .task-row {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.625rem 0;
+  gap: .75rem;
+  padding: .6rem 0;
   border-bottom: 1px solid var(--surface-border);
 }
+.task-row:last-child { border-bottom: none; }
 
-.task-row:last-child {
-  border-bottom: none;
-}
-
-.task-row .task-checkbox {
+.task-checkbox {
   flex-shrink: 0;
-  width: 1.25rem;
-  height: 1.25rem;
+  width: 1.15rem; height: 1.15rem;
   cursor: pointer;
   accent-color: var(--accent);
 }
 
-.task-row .task-text {
-  flex: 1;
-  min-width: 0;
-  color: var(--text);
-  word-break: break-word;
-}
+.task-text { flex: 1; min-width: 0; word-break: break-word; }
+.task-row.completed .task-text { text-decoration: line-through; color: var(--muted); }
 
-/* Completed task styling */
-.task-row.completed .task-text {
-  text-decoration: line-through;
-  color: var(--muted);
-}
+.task-edit-input { flex: 1; min-width: 0; }
+.task-actions { display: flex; gap: .35rem; flex-shrink: 0; }
 
-/* Edit input that replaces text when editing */
-.task-row .task-edit-input {
-  flex: 1;
-  min-width: 0;
-}
+.empty-state { color: var(--muted); padding: .75rem 0; }
 
-.task-row .task-edit,
-.task-row .task-delete {
-  flex-shrink: 0;
-}
+/* ===== Quick Links (button style) ========================================= */
 
-/* ===== Quick Links ======================================================== */
+.link-form { flex-wrap: wrap; margin-bottom: .75rem; }
+.link-form input { flex: 1; min-width: 110px; }
 
-.link-form {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
-}
+.link-list { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: .75rem; }
 
-.link-form input[type="text"],
-.link-form input[type="url"] {
-  flex: 1;
-  min-width: 120px;
-}
-
-.link-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-/* Link buttons — clickable shortcuts to favorite websites (AC 4.1) */
-.link-button {
+.link-item {
   display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
+  align-items: stretch;
+  background: var(--accent);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  transition: background-color .15s ease;
+}
+.link-item:hover { background: var(--accent-hover); }
+
+.link-button {
+  padding: .5rem 1rem;
+  color: var(--accent-text);
+  text-decoration: none;
+  font-weight: 500;
 }
 
-/* ===== Form Inputs ======================================================== */
+.link-delete {
+  padding: 0 .6rem;
+  border: none;
+  border-left: 1px solid rgba(255, 255, 255, .35);
+  border-radius: 0;
+  background: transparent;
+  color: var(--accent-text);
+  font-size: 1.1rem;
+  line-height: 1;
+  opacity: .8;
+}
+[data-theme="dark"] .link-delete { border-left-color: rgba(0, 0, 0, .3); }
+.link-delete:hover:not(:disabled) { opacity: 1; background: rgba(0, 0, 0, .18); }
 
-input[type="text"],
-input[type="url"],
-select {
-  font-size: 16px; /* AC 9.4: at least 16px */
-  padding: 0.5rem 0.625rem;
+.max-message { color: var(--muted); font-size: .9rem; margin-top: .4rem; }
+.max-message:empty { display: none; }
+
+/* ===== Inputs & Buttons =================================================== */
+
+input[type="text"], select {
+  font: inherit;
+  padding: .5rem .65rem;
   border: 1px solid var(--input-border);
   border-radius: var(--radius-sm);
   background-color: var(--input-bg);
   color: var(--text);
-  font-family: inherit;
-  line-height: 1.5;
 }
-
-input[type="text"]::placeholder,
-input[type="url"]::placeholder {
-  color: var(--muted);
-}
-
-/* ===== Buttons ============================================================ */
+input::placeholder { color: var(--muted); }
 
 button {
-  font-size: 16px;
-  padding: 0.5rem 1rem;
+  font: inherit;
+  font-weight: 500;
+  padding: .5rem 1rem;
   border: 1px solid var(--accent);
   border-radius: var(--radius-sm);
   background-color: var(--accent);
   color: var(--accent-text);
   cursor: pointer;
-  font-family: inherit;
-  line-height: 1.5;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
+  transition: background-color .15s ease, border-color .15s ease;
 }
+button:hover:not(:disabled) { background-color: var(--accent-hover); border-color: var(--accent-hover); }
+button:disabled { opacity: .45; cursor: not-allowed; }
 
-button:hover:not(:disabled) {
-  background-color: var(--accent-hover);
-  border-color: var(--accent-hover);
-}
+.btn-secondary { background: transparent; color: var(--text); border-color: var(--input-border); }
+.btn-secondary:hover:not(:disabled) { background: var(--bg); border-color: var(--muted); }
 
-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Secondary / small buttons — edit and delete controls */
-.task-edit,
-.task-delete,
-.link-delete {
-  padding: 0.25rem 0.5rem;
-  font-size: 0.875rem;
-  background-color: transparent;
+.task-edit, .task-delete {
+  padding: .2rem .6rem;
+  font-size: .85rem;
+  background: transparent;
   color: var(--text);
-  border: 1px solid var(--input-border);
+  border-color: var(--input-border);
 }
+.task-edit:hover:not(:disabled), .task-delete:hover:not(:disabled) { background: var(--bg); border-color: var(--muted); }
+.task-delete { color: var(--error); }
 
-.task-edit:hover,
-.task-delete:hover,
-.link-delete:hover {
-  background-color: var(--surface-border);
-  border-color: var(--surface-border);
-}
+/* ===== Errors ============================================================= */
 
-/* Destructive delete buttons get error tint */
-.task-delete,
-.link-delete {
-  color: var(--error);
-  border-color: var(--error-border);
-}
-
-/* Theme toggle button */
-.theme-toggle {
-  padding: 0.5rem 1rem;
-  font-size: 1rem;
-  white-space: nowrap;
-}
-
-/* ===== Error Messages ===================================================== */
-
-/* Inline error messages within widgets (AC 3.6, 4.5, 4.8, 5.6, 12.1) */
 .error-message {
-  font-size: 16px; /* AC 9.4: at least 16px */
   color: var(--error);
-  background-color: var(--error-bg);
+  background: var(--error-bg);
   border: 1px solid var(--error-border);
   border-radius: var(--radius-sm);
-  padding: 0.5rem 0.75rem;
-  margin-top: 0.5rem;
+  padding: .45rem .75rem;
+  margin-bottom: .5rem;
+  font-size: .95rem;
 }
+.error-message:empty { display: none; }
 
-/* Hide error container when empty */
-.error-message:empty {
-  display: none;
-}
+/* ===== Focus ============================================================== */
 
-/* ===== Focus States (Accessibility) ====================================== */
-
-button:focus-visible,
-input:focus-visible,
-select:focus-visible {
-  outline: 2px solid var(--input-focus-border);
+button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible {
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
 /* ===== Responsive ========================================================= */
 
 @media (max-width: 768px) {
-  .dashboard-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .dashboard-header {
-    flex-direction: column;
-    gap: 0.75rem;
-    align-items: flex-start;
-  }
+  body { padding: 1rem; }
+  .dashboard-grid { grid-template-columns: 1fr; }
+  .greeting-widget { padding: 2rem 1rem; }
 }
 
-/* ===== Reduced Motion ===================================================== */
-
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    transition-duration: 0.01ms !important;
-    animation-duration: 0.01ms !important;
-  }
+  *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
 }

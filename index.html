@@ -3,44 +3,61 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Life Dashboard</title>
+  <title class = "dashboard-title">Life Dashboard</title>
+  <script>
+    (function () {
+      try {
+        var t = JSON.parse(localStorage.getItem('tdl-theme'));
+        if (t === 'dark' || t === 'light') {
+          document.documentElement.setAttribute('data-theme', t);
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <header class="dashboard-header">
-    <h1>Life Dashboard</h1>
+    <h1 class="dashboard-title">Life<span></span>Dashboard</h1>
     <button id="theme-toggle" type="button" aria-label="Toggle dark and light theme">
-      Toggle Theme
+      <span  aria-hidden="true"></span>
+      <span class="theme-label">Dark</span>
     </button>
   </header>
 
   <main class="dashboard-main">
     <!-- Greeting Widget: current time, date, and time-based greeting -->
-    <section id="greeting-widget" class="widget" aria-label="Greeting">
+    <section id="greeting-widget" class="widget greeting-widget" aria-label="Greeting">
       <div id="greeting-time" class="greeting-time" aria-live="polite"></div>
       <div id="greeting-date" class="greeting-date"></div>
       <div id="greeting-text" class="greeting-text" aria-live="polite"></div>
     </section>
 
     <!-- Focus Timer: 25-minute countdown with Start, Stop, and Reset controls -->
-    <section id="focus-timer" class="widget" aria-label="Focus Timer">
-      <div id="timer-display" class="timer-display" aria-live="polite" aria-atomic="true">25:00</div>
+    <section id="focus-timer" class="widget focus-timer" aria-label="Focus Timer">
+      <h2 class="widget-title">Focus Timer</h2>
+      <div id="timer-display" class="timer-display" aria-live="off">25:00</div>
+      <div class="timer-bar" aria-hidden="true"><div id="timer-progress" class="timer-progress"></div></div>
+      <p id="timer-status" class="timer-status">Ready when you are.</p>
       <div class="timer-controls">
         <button id="timer-start" type="button">Start</button>
-        <button id="timer-stop" type="button">Stop</button>
-        <button id="timer-reset" type="button">Reset</button>
+        <button id="timer-stop" class="btn-secondary" type="button">Stop</button>
+        <button id="timer-reset" class="btn-secondary" type="button">Reset</button>
       </div>
     </section>
 
     <!-- Todo List: task input form, task list, and sort mode control -->
-    <section id="todo-list" class="widget" aria-label="To-Do List">
-      <h2>Tasks</h2>
-      <form id="task-form" class="task-form">
-        <label for="task-input">Add a task</label>
-        <input id="task-input" type="text" name="task" placeholder="Enter task text..." maxlength="200" autocomplete="off">
+    <section id="todo-list" class="widget todo-widget" aria-label="To-Do List">
+      <h2 class="widget-title">Tasks <span id="task-count" class="count"></span></h2>
+      <form id="task-form" class="todo-form">
+        <label for="task-input" class="sr-only">Add a task</label>
+        <input id="task-input" type="text" name="task" placeholder="Whats your plan?" maxlength="200" autocomplete="off">
         <button type="submit">Add</button>
       </form>
-      <p id="task-error" class="error-message" role="alert" aria-live="assertive"></p>
+      <p id="task-error" class="error-message" role="alert"></p>
       <ul id="task-list" class="task-list" aria-label="Task list"></ul>
       <div class="sort-control">
         <label for="sort-mode">Sort by</label>
@@ -53,16 +70,16 @@
     </section>
 
     <!-- Quick Links: link input form and link buttons -->
-    <section id="quick-links" class="widget" aria-label="Quick Links">
-      <h2>Quick Links</h2>
+    <section id="quick-links" class="widget links-widget" aria-label="Quick Links">
+      <h2 class="widget-title">Quick Links</h2>
       <form id="link-form" class="link-form">
-        <label for="link-name">Name</label>
-        <input id="link-name" type="text" name="name" placeholder="Link name" autocomplete="off">
-        <label for="link-url">URL</label>
-        <input id="link-url" type="text" name="url" placeholder="https://example.com" autocomplete="off">
-        <button type="submit">Add Link</button>
+        <label for="link-name" class="sr-only">Name</label>
+        <input id="link-name" type="text" name="name" placeholder="Name" autocomplete="off" maxlength="30">
+        <label for="link-url" class="sr-only">URL</label>
+        <input id="link-url" type="text" name="url" placeholder="example.com" autocomplete="off">
+        <button type="submit">Add</button>
       </form>
-      <p id="link-error" class="error-message" role="alert" aria-live="assertive"></p>
+      <p id="link-error" class="error-message" role="alert"></p>
       <p id="link-max-message" class="max-message" aria-live="polite"></p>
       <div id="link-list" class="link-list" aria-label="Quick links"></div>
     </section>
